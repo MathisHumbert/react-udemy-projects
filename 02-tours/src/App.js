@@ -27,6 +27,7 @@ function App() {
       console.log(error);
     }
   };
+  ù;
 
   useEffect(() => {
     fetchTours();
