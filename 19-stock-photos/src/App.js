@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import Photo from './Photo';
 const clientID = `?client_id=${process.env.REACT_APP_ACCESS_KEY}`;
@@ -8,8 +8,10 @@ const searchUrl = `https://api.unsplash.com/search/photos/`;
 function App() {
   const [loading, setLoading] = useState(false);
   const [photos, setPhotos] = useState([]);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [query, setQuery] = useState('');
+  const mounted = useRef(false);
+  const [newImages, setNewImages] = useState(false);
 
   const fetchImages = async () => {
     setLoading(true);
@@ -35,37 +37,53 @@ function App() {
           return [...oldValues, ...data];
         }
       });
+      setNewImages(false);
       setLoading(false);
     } catch (error) {
       console.log(error);
+      setNewImages(false);
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchImages();
+    // eslint-disable-next-line
   }, [page]);
 
   useEffect(() => {
-    const event = window.addEventListener('scroll', () => {
-      if (
-        !loading &&
-        window.innerHeight + window.scrollY >= document.body.scrollHeight - 2
-      ) {
-        setPage((oldValue) => {
-          return oldValue + 1;
-        });
-      }
-    });
-    return () => {
-      window.removeEventListener('scroll', event);
-    };
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    if (!newImages) return;
+    if (loading) return;
+    setPage((oldValues) => oldValues + 1);
+  }, [newImages]);
+
+  const event = () => {
+    if (window.innerHeight + window.scrollY > document.body.scrollHeight - 2) {
+      setNewImages(true);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', event);
+    return () => window.removeEventListener('scroll', event);
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!query) {
+      return;
+    }
+    if (page === 1) {
+      fetchImages();
+      return;
+    }
     setPage(1);
   };
+
   return (
     <main>
       <section className="search">
