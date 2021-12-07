@@ -8,6 +8,7 @@ const table = {
 };
 
 const API_ENDPOINT = 'https://opentdb.com/api.php?';
+ù;
 
 const AppContext = React.createContext();
 
